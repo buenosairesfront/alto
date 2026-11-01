@@ -1,3 +1,5 @@
+**English** · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [日本語](README.ja.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md)
+
 # alto
 
 A three-layer polyphonic synthesizer for [monome norns](https://monome.org/docs/norns/),
@@ -17,8 +19,6 @@ picture of the sound instead of a list of numbers.
   "space" that goes from dry to cloud to shimmer
 - **10 factory presets + 10 user slots**
 - MIDI note input from any connected device (ports 1–4)
-
-*Spanish documentation below / documentación en español más abajo.*
 
 ## Requirements
 
@@ -152,59 +152,3 @@ User presets are stored in `~/dust/data/alto/user_presets.tab`.
 
 Made by [Buenos Aires Front](https://github.com/buenosairesfront) / U-MA.
 Released under the MIT license.
-
----
-
-# alto (español)
-
-Sintetizador polifónico de tres capas para norns, pensado para tocarse
-mirando la pantalla: cada página es un dibujo del sonido, no una lista de
-números.
-
-- **3 voces** por nota, cada una con su motor (18 para elegir), volumen,
-  octava, afinación y LFO
-- **filtro** con envolvente, seguimiento de teclado y barrido con K3
-- **arpegiador** (4 tipos, 4 velocidades, gate hasta legato) y **modo
-  acorde** (12 acordes)
-- **secuenciador de 3 anillos** polirrítmico, uno por voz, con melodías
-  automáticas
-- **efectos**: crush, distorsión, ring modulator, reverb y un "espacio"
-  granular que va de seco a nube y a shimmer
-- **10 presets de fábrica + 10 lugares de usuario**
-- entrada de notas MIDI desde cualquier dispositivo (puertos 1 a 4)
-
-## Instalación
-
-Desde maiden:
-
-```
-;install https://github.com/buenosairesfront/alto
-```
-
-Después **reiniciá la norns** (SYSTEM > RESTART) para que compile el engine
-`UmaFlagship`, y cargá **alto** desde SELECT.
-
-## Controles
-
-En todas las páginas: **K2 + E1** cambia de página, **K1** hold (latch de
-notas). Cualquier tecla saltea la intro.
-
-1. **play** — E1 espacio, E2 resonancia, E3 cutoff. K2 arpegiador on/off;
-   K2+E2 tipo, K2+E3 velocidad, K2+E1 largo de los pasos (al máximo, legato).
-   K3 barrido de filtro (sostenido = sustain); K3 mantenido 0.5 s = modo
-   acorde.
-2. **voces** — E1 voz, E2 volumen, E3 motor, K2 voz on/off, K3 LFO on/off;
-   K3+E1/E2/E3 tempo, forma y cantidad del LFO.
-3. **afinar** — E1 voz, E2 semitonos, E3 cents; K2/K3 los vuelven a 0.
-4. **adsr** — E2 punto, E3 moverlo, K3 la envolvente también maneja el filtro.
-5. **acorde** — E2 tipo de acorde.
-6. **secuenciador** — tres anillos (A afuera, B medio, C adentro), cada uno
-   toca su voz con su propia cantidad de pasos. K3 play/stop; K3+E1 anillo;
-   K3+E2 dirección; K3+E3 anillo on/off; K2 graba; E1 pasos; E2 paso;
-   E3 altura (al mínimo, silencio); K2+E3 duración del paso; K2+E2 duración
-   de todos (al máximo, ligado); K1+E3 melodías automáticas; K1 mantenido
-   0.5 s borra el paso.
-7. **efectos** — E1 efecto, E2/E3 sus dos parámetros, K2 on/off.
-8. **presets** — E2/E3 elegir, K2 cargar/grabar (confirmar con K2), K3 salir.
-
-Licencia MIT.
