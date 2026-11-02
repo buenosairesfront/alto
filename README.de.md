@@ -149,6 +149,10 @@ Werks-Presets: glass keys, analog brass, deep sub, acid line, stellar pad,
 vox choir, klavinsky, chaos drone, metal bell, perc keys.
 Benutzer-Presets werden in `~/dust/data/alto/user_presets.tab` gespeichert.
 
+<!-- u-ma:more -->
+**Mehr von U-MA:** alle Instrumente und Werkzeuge an einem Ort → [U-MA-Übersicht](https://github.com/buenosairesfront/U-ma/blob/main/README.de.md)
+<!-- /u-ma:more -->
+
 ## Credits
 
 Erstellt von [Buenos Aires Front](https://github.com/buenosairesfront) / U-MA.

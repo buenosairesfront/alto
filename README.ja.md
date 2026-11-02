@@ -138,6 +138,10 @@ maj7, min7, dom7, add9, maj9, min9
 vox choir, klavinsky, chaos drone, metal bell, perc keys。
 ユーザープリセットは `~/dust/data/alto/user_presets.tab` に保存されます。
 
+<!-- u-ma:more -->
+**U-MA のほかの作品：** すべての楽器とツールをひとつに → [U-MA ショーケース](https://github.com/buenosairesfront/U-ma/blob/main/README.ja.md)
+<!-- /u-ma:more -->
+
 ## クレジット
 
 制作：[Buenos Aires Front](https://github.com/buenosairesfront) / U-MA。

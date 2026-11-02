@@ -148,6 +148,10 @@ Factory: glass keys, analog brass, deep sub, acid line, stellar pad,
 vox choir, klavinsky, chaos drone, metal bell, perc keys.
 User presets are stored in `~/dust/data/alto/user_presets.tab`.
 
+<!-- u-ma:more -->
+**More from U-MA:** every instrument and tool in one place → [U-MA showcase](https://github.com/buenosairesfront/U-ma)
+<!-- /u-ma:more -->
+
 ## Credits
 
 Made by [Buenos Aires Front](https://github.com/buenosairesfront) / U-MA.
