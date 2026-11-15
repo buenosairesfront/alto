@@ -2869,11 +2869,12 @@ local function draw_label()
   screen.font_size(8)
   local w = screen.text_extents(txt)
   local x = math.floor(64 - w / 2)
+  local y0 = UI.page == 7 and 0 or 52 -- en efectos va arriba: abajo están el nombre y las barras
   screen.level(0)
-  screen.rect(x - 3, 52, w + 6, 12)
+  screen.rect(x - 3, y0, w + 6, 12)
   screen.fill()
   screen.level(15) -- sin fundido: los grises bajos ensucian el OLED
-  screen.move(x, 60)
+  screen.move(x, y0 + 8)
   screen.text(txt)
 end
 
