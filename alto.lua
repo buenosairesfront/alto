@@ -167,10 +167,22 @@ function DETUNE.voice_mul(i)
   return 2 ^ (v.octave + ((v.semi or 0) + (v.cents or 0) / 100) / 12) * DETUNE.mul(i)
 end
 
+-- cambio de motor con E3: cada cambio re-crea en el engine todas las notas
+-- sostenidas, y girar rápido saturaba SuperCollider (xruns, audio colgado).
+-- La pantalla cambia al instante; el engine recibe el motor cuando se deja
+-- de girar (QUIET) o, girando sin parar, como mucho cada MAXWAIT
+local KSET = { due = {}, first = {}, QUIET = 0.12, MAXWAIT = 0.35 }
+function KSET.touch(i)
+  local now = util.time()
+  KSET.due[i] = now + KSET.QUIET
+  KSET.first[i] = KSET.first[i] or now
+end
+function KSET.clear() KSET.due, KSET.first = {}, {} end
+
 local function sync_voice(i)
   local v = S.voices[i]
   send_to("voiceOn", i, v.on and 1 or 0)
-  send_to("kind", i, v.kind - 1)
+  if not KSET.due[i] then send_to("kind", i, v.kind - 1) end
   send_to("octMul", i, DETUNE.voice_mul(i))
   send_to("amp", i, v.level / 100 * 0.5)
   send_to("pwm", i, v.timbre / 100)
@@ -563,6 +575,7 @@ local function apply_state(d)
   if d.arp then
     S.arp.type, S.arp.rate, S.arp.gate, S.arp.legato = d.arp.type, d.arp.rate, d.arp.gate, d.arp.legato
   end
+  KSET.clear() -- un preset manda sus motores al instante
   sync_all()
 end
 
@@ -2462,8 +2475,20 @@ ctl[2].enc = function(n, d)
     v.level = nudge(v.level, d, 2)
   else
     v.kind = wrap(v.kind + d, 1, #KINDS)
+    KSET.touch(i) -- el motor llega al engine cuando se deja de girar
   end
   sync_voice(i)
+end
+
+-- manda los motores pendientes (se llama en cada cuadro)
+function KSET.step()
+  local now = util.time()
+  for i, t in pairs(KSET.due) do
+    if now >= t or now - KSET.first[i] >= KSET.MAXWAIT then
+      KSET.due[i], KSET.first[i] = nil, nil
+      sync_voice(i)
+    end
+  end
 end
 ctl[2].k2 = function()
   local v = S.voices[UI.voice_sel]
@@ -2877,6 +2902,7 @@ function init()
       update(1 / 30)
       FGLIDE.step()
       DETUNE.step()
+      KSET.step()
       if frame % 30 == 0 then -- el tempo pudo cambiar (LFO y espacio sincronizados)
         for i = 1, 3 do sync_voice(i) end
         sync_fx()
