@@ -2266,6 +2266,7 @@ local function slot_label(i)
   if p then return p.label end
   return ""
 end
+P.slot_label = slot_label -- también lo usa el cartel de parámetros
 
 local function draw_slot(i, x, y, s, L)
   local p = presets[i]
@@ -2776,6 +2777,106 @@ ctl[8].k2 = function()
 end
 ctl[8].k3up = function() UI.dialog = nil end
 
+-- ---- cartel del parámetro que se mueve (abajo, sobre fondo negro, como en los Chordex) ----
+local PLABEL = { txt = nil, till = 0, DUR = 1.5 }
+local PL_NOTES = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" }
+local PL_ARP = { "UP", "DOWN", "UP x2", "DOWN x2", "RANDOM" }
+local PL_RATE = { "1/4", "1/8", "1/16", "1/32" }
+local PL_SHAPE = { "SINE", "TRI", "SQUARE", "S&H", "S&H HARD", "RANDOM" }
+local PL_MODE = { "FORWARD", "REVERSE", "PING-PONG", "RANDOM" }
+local PL_ADSR = { "ATTACK", "DECAY", "SUSTAIN", "RELEASE" }
+local function pl_num(x) return string.format("%d", math.floor(x + 0.5)) end
+local function pl_div(x) return x >= 1 and pl_num(x) or ("1/" .. pl_num(1 / x)) end
+
+local function show_label(txt)
+  PLABEL.txt, PLABEL.till = txt, util.time() + PLABEL.DUR
+end
+
+-- qué se movió: página, encoder y teclas apretadas (se lee después del cambio)
+local function param_label(n)
+  local pg = UI.page
+  if pg == 1 then
+    if n == 1 then return "SPACE " .. pl_num(S.fx.space.amount) end
+    if UI.k2 then
+      if n == 2 then return "ARP TYPE " .. PL_ARP[S.arp.type] end
+      return "ARP RATE " .. PL_RATE[S.arp.rate]
+    end
+    if n == 2 then return "RESONANCE " .. pl_num(S.filt.res) end
+    return "CUTOFF " .. pl_num(S.filt.cutoff)
+  elseif pg == 2 or pg == 3 then
+    local i = UI.voice_sel
+    local v = S.voices[i]
+    local vn = "VOICE " .. i
+    if n == 1 and not (pg == 2 and UI.k3) then return vn end
+    if pg == 2 then
+      if UI.k3 then
+        if n == 1 then return vn .. " LFO RATE " .. pl_div(LFO_DIVS[v.lfo.div]) end
+        if n == 2 then return vn .. " LFO " .. PL_SHAPE[v.lfo.shape] end
+        return vn .. " LFO AMOUNT " .. pl_num(v.lfo.amount)
+      end
+      if n == 2 then return vn .. " LEVEL " .. pl_num(v.level) end
+      return vn .. " ENGINE " .. string.upper(KINDS[v.kind])
+    end
+    if n == 2 then return vn .. " SEMITONES " .. string.format("%+d", v.semi or 0) end
+    return vn .. " CENTS " .. string.format("%+d", v.cents or 0)
+  elseif pg == 4 then
+    if n == 1 then return nil end
+    local k = UI.adsr_sel
+    return PL_ADSR[k] .. " " .. pl_num(S.voices[1].adsr[P.ADSR_KEYS[k]])
+  elseif pg == 5 then
+    if n == 1 then return nil end
+    return "CHORD " .. CHORDS[S.chord].name
+  elseif pg == 6 then
+    local ring = SEQ.ring()
+    local rn = "RING " .. ({ "A", "B", "C" })[SEQ.sel]
+    if UI.k1 and n == 3 then return rn .. " MELODY" end
+    if UI.k3 and n == 3 then return rn .. (ring.on and " ON" or " OFF") end
+    if UI.k3 and n == 1 then return rn end
+    if UI.k3 and n == 2 then return rn .. " " .. PL_MODE[ring.mode] end
+    if UI.k2 and (n == 2 or n == 3) then
+      local g = ring.steps[ring.cursor].gate or 80
+      local gl = g >= 100 and "TIE" or pl_num(g)
+      return (n == 3 and "STEP LENGTH " or "ALL STEPS LENGTH ") .. gl
+    end
+    if n == 1 then return rn .. " STEPS " .. ring.len end
+    if n == 2 then return "STEP " .. ring.cursor end
+    local nt = ring.steps[ring.cursor].note
+    return "STEP NOTE " .. (nt and (PL_NOTES[nt % 12 + 1] .. (math.floor(nt / 12) - 1)) or "REST")
+  elseif pg == 7 then
+    local k = UI.fx_sel
+    local nm = ({ "CRUSH", "DISTORTION", "RING MOD", "REVERB" })[k]
+    if n == 1 then return nm end
+    local p1, p2 = 0, 0
+    local fx = S.fx
+    local sub
+    if k == 1 then p1, p2, sub = fx.crush.amount, fx.crush.down, { "BITS", "DOWNSAMPLE" }
+    elseif k == 2 then p1, p2, sub = fx.dist.drive, fx.dist.tone, { "DRIVE", "TONE" }
+    elseif k == 3 then p1, p2, sub = fx.ring.amount, fx.ring.freq, { "AMOUNT", "FREQ" }
+    else p1, p2, sub = fx.verb.amount, fx.verb.size, { "AMOUNT", "SIZE" } end
+    if n == 2 then return nm .. " " .. sub[1] .. " " .. pl_num(p1) end
+    return nm .. " " .. sub[2] .. " " .. pl_num(p2)
+  elseif pg == 8 then
+    if UI.dialog then return nil end
+    local lbl = P.slot_label(UI.cursor)
+    return "PRESET " .. UI.cursor .. (lbl ~= "" and (" " .. string.upper(lbl)) or "")
+  end
+end
+
+local function draw_label()
+  if not PLABEL.txt or util.time() > PLABEL.till then return end
+  local txt = PLABEL.txt
+  screen.font_face(1)
+  screen.font_size(8)
+  local w = screen.text_extents(txt)
+  local x = math.floor(64 - w / 2)
+  screen.level(0)
+  screen.rect(x - 3, 52, w + 6, 12)
+  screen.fill()
+  screen.level(15) -- sin fundido: los grises bajos ensucian el OLED
+  screen.move(x, 60)
+  screen.text(txt)
+end
+
 function enc(n, d)
   if UI.splash then return end
   if n == 1 and UI.k2 and UI.page == 1 and UI.k2_moved_arp then
@@ -2788,6 +2889,7 @@ function enc(n, d)
       for i = 1, 3 do sync_voice(i) end
     end
     UI.k2_moved = true
+    show_label("ARP GATE " .. (S.arp.legato and "LEGATO" or pl_num(S.arp.gate)))
     return
   end
   if n == 1 and UI.k2 then
@@ -2798,6 +2900,8 @@ function enc(n, d)
   end
   local c = ctl[UI.page]
   if c.enc then c.enc(n, d) end
+  local ok, lb = pcall(param_label, n)
+  if ok and lb then show_label(lb) end
 end
 
 function key(n, z)
@@ -2872,6 +2976,7 @@ function redraw()
     if sp.stage == 1 then uma_intro.render(sp.t) else P.splash_alto(sp.t) end
   else
     DRAW[UI.page]()
+    draw_label()
   end
   screen.update()
 end
